@@ -1,0 +1,143 @@
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 Hyaperlink</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #1e1e1e;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+        h1 {
+            margin-bottom: 20px;
+        }
+        input, button {
+            padding: 10px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+        }
+        input {
+            width: 300px;
+        }
+        button {
+            background-color: #007bff;
+            color: #fff;
+            cursor: pointer;
+        }
+        #output {
+            margin-top: 20px;
+            background: #333;
+            padding: 10px;
+            border-radius: 5px;
+            word-break: break-all;
+        }
+        .discord-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: #5865f2;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: -1;
+        }
+    </style>
+</head>
+<body>
+    <a class="discord-btn" href="https://discord.gg/W9CDQ8drhU" target="_blank">Discord</a>
+    <h1>Encurtador com is.gd + Copiar</h1>
+    <input type="text" id="urlInput" placeholder="Cole sua URL aqui...">
+    <button onclick="encurtar()">Encurtar e Gerar</button>
+    <div id="output"></div>
+
+    <canvas id="background"></canvas>
+
+    <script>
+        async function encurtar() {
+            const url = document.getElementById('urlInput').value.trim();
+            if (!url) return alert("Digite uma URL válida!");
+            try {
+                const res = await fetch(`https://is.gd/create.php?format=simple&url=${encodeURIComponent(url)}`);
+                const shortUrl = await res.text();
+                const markdown = `(${url})[${shortUrl}]`;
+                document.getElementById('output').innerHTML = markdown;
+                await navigator.clipboard.writeText(markdown);
+                alert("Copiado para a área de transferência!");
+            } catch (err) {
+                alert("Falha ao encurtar: " + err);
+            }
+        }
+
+        // Bolinhas animadas de fundo
+        const canvas = document.getElementById("background");
+        const ctx = canvas.getContext("2d");
+        let width, height;
+        let particles = [];
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+        window.onresize = resize;
+        resize();
+        function createParticles(num) {
+            for (let i = 0; i < num; i++) {
+                particles.push({
+                    x: Math.random() * width,
+                    y: Math.random() * height,
+                    vx: Math.random() * 1 - 0.5,
+                    vy: Math.random() * 1 - 0.5,
+                    radius: Math.random() * 2 + 1
+                });
+            }
+        }
+        function drawParticles() {
+            ctx.clearRect(0, 0, width, height);
+            for (let i = 0; i < particles.length; i++) {
+                let p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                if (p.x < 0 || p.x > width) p.vx *= -1;
+                if (p.y < 0 || p.y > height) p.vy *= -1;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.radius, 0, 2 * Math.PI);
+                ctx.fillStyle = "#ffffff33";
+                ctx.fill();
+                for (let j = i + 1; j < particles.length; j++) {
+                    let q = particles[j];
+                    let dx = p.x - q.x;
+                    let dy = p.y - q.y;
+                    let dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < 100) {
+                        ctx.beginPath();
+                        ctx.moveTo(p.x, p.y);
+                        ctx.lineTo(q.x, q.y);
+                        ctx.strokeStyle = "#ffffff22";
+                        ctx.stroke();
+                    }
+                }
+            }
+            requestAnimationFrame(drawParticles);
+        }
+        createParticles(50);
+        drawParticles();
+    </script>
+</body>
+</html>
